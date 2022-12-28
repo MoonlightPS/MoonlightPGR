@@ -4,8 +4,16 @@
  * Copyright (c) 2022
  */
 
+using MoonlightPGR.Server;
 using MoonlightPGR.Util;
+namespace MoonlightPGR;
 
-Logger c = new("MoonlightPGR", ConsoleColor.Blue);
+public static class CrepeBH
+{
+    public static void Main()
+    {
+        Logger.c.Log("Starting MoonlightPGR...");
 
-c.Log("Starting MoonlightPGR...");
+        var server = new TcpServer("127.0.0.1", 7000);
+    }
+}

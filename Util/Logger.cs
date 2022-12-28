@@ -4,6 +4,7 @@ namespace MoonlightPGR.Util;
 
 public class Logger
 {
+    public static Logger c = new("MoonlightPGR", ConsoleColor.Blue);
     private string _name;
     private ConsoleColor _nameColor;
 
