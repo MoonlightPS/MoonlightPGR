@@ -6,6 +6,7 @@ using System;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using System.Xml.Linq;
+using MoonlightPGR.Server.PacketUtils.PacketTypes;
 
 namespace MoonlightPGR.Server
 {
@@ -45,13 +46,13 @@ namespace MoonlightPGR.Server
                         onMessage(msg);
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     c.Error(e.Message);
                     //ignored
                 }
 
-                
+
             }
         }
 
@@ -66,8 +67,24 @@ namespace MoonlightPGR.Server
                 //c.Log($"Decrypted : {Convert.ToHexString(message)}");
                 MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
-                Console.WriteLine($"Received : {JsonConvert.SerializeObject(packet)}");
-            } catch (Exception e)
+                //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
+                switch (packet.Type)
+                {
+                    case BasePacket.PacketContentType.RequestPacket:
+                        RequestPacket req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
+                        c.Log($"Recv : {packet.Type}({packet.Seq},{packet.Type}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(req.Body))}");
+                        break;
+                    case BasePacket.PacketContentType.PushPacket:
+                        PushPacket push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
+                        c.Log($"Recv : {packet.Type}({packet.Seq},{packet.Type}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(push.Body))}");
+                        break;
+                    case BasePacket.PacketContentType.Exception:
+                        ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
+                        c.Error($"Error Recv : {packet.Type}({packet.Seq},{packet.Type}) | ({ex.ErrorCode}) {ex.ErrorMessage}",false);
+                        break;
+                }
+            }
+            catch (Exception e)
             {
                 c.Error(e.ToString());
             }
