@@ -72,15 +72,15 @@ namespace MoonlightPGR.Server
                 {
                     case BasePacket.PacketContentType.RequestPacket:
                         RequestPacket req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
-                        c.Log($"Recv : {packet.Type}({packet.Seq},{packet.Type}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(req.Body))}");
+                        c.Log($"Recv : {packet.Type}({packet.Seq}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(req.Body))}");
                         break;
                     case BasePacket.PacketContentType.PushPacket:
                         PushPacket push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
-                        c.Log($"Recv : {packet.Type}({packet.Seq},{packet.Type}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(push.Body))}");
+                        c.Log($"Recv : {packet.Type}({packet.Seq}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(push.Body))}");
                         break;
                     case BasePacket.PacketContentType.Exception:
                         ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
-                        c.Error($"Error Recv : {packet.Type}({packet.Seq},{packet.Type}) | ({ex.ErrorCode}) {ex.ErrorMessage}",false);
+                        c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}",false);
                         break;
                 }
             }
