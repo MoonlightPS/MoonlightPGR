@@ -3,6 +3,9 @@ using MoonlightPGR.Server.PacketUtils;
 using MoonlightPGR.Util;
 using MessagePack;
 using System;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace MoonlightPGR.Server
 {
@@ -38,7 +41,7 @@ namespace MoonlightPGR.Server
                     if (len > 0)
                     {
                         // Get message
-                        c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
+                        //c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
                         onMessage(msg);
                     }
                 }
@@ -56,13 +59,14 @@ namespace MoonlightPGR.Server
         {
             try
             {
-                message = StringToByteArray(Convert.ToHexString(message).Trim('0'));
-                string packetName = "null"; // have to figure out way to get packet name after deserializing
+                string array = Convert.ToHexString(message).Trim('0');
+                array = array.Substring(8, array.Length - 8);
+                message = StringToByteArray(array);
                 PGRCrypto.Decrypt(message);
-                c.Log($"Decrypted : {Convert.ToHexString(message)}");
+                //c.Log($"Decrypted : {Convert.ToHexString(message)}");
                 MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
-                Console.WriteLine(packet.Type.ToString());
+                Console.WriteLine($"Received : {JsonConvert.SerializeObject(packet)}");
             } catch (Exception e)
             {
                 c.Error(e.ToString());
