@@ -8,7 +8,7 @@ using MoonlightPGR.Server;
 using MoonlightPGR.Util;
 namespace MoonlightPGR;
 
-public static class CrepeBH
+public static class MoonlightPGR
 {
     public static void Main()
     {
