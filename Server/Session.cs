@@ -81,10 +81,10 @@ namespace MoonlightPGR.Server
                             if (ReqHandler == null)
                             {
                                 c.Warn($"Unhandled packet {Req.PacketName}");
-                                return;
+                                //return;
                             }
                             c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
-                            ReqHandler.Invoke(this, Req);
+                            //ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
                             var Push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
@@ -92,10 +92,10 @@ namespace MoonlightPGR.Server
                             if (PushHandler == null)
                             {
                                 c.Warn($"Unhandled packet {Push.PacketName}");
-                                return;
+                                //return;
                             }
                             c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
-                            PushHandler.Invoke(this, Push);
+                            //PushHandler.Invoke(this, Push);
                             break;
                         case BasePacket.PacketContentType.Exception:
                             ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);

@@ -29,7 +29,7 @@ namespace MoonlightPGR.Server
             _server.Start();
             Logger.c.Log($"Running on port {_port}");
 
-            foreach (var type in typeof(HandlerFactory).Assembly.GetTypes())
+            /*foreach (var type in typeof(HandlerFactory).Assembly.GetTypes())
             {
                 foreach (var method in type.GetMethods())
                 {
@@ -37,12 +37,12 @@ namespace MoonlightPGR.Server
                     if (attributes.Length > 0)
                     {
                         var attribute = (PacketHandlerAttribute)attributes[0];
-                        Console.WriteLine($"{attribute}");
-                        var handler = (Action<Session, IPacket>)Delegate.CreateDelegate(typeof(Action<Session, IPacket>), method);
+                        Console.WriteLine($"{attribute.ToString()}");
+                        var handler = (Action<Session, IPacket>)Delegate.CreateDelegate(typeof(Action<Session, Ipack>), method);
                         HandlerFactory.RegisterHandler((string)attribute.PacketName, handler);
                     }
                 }
-            }
+            }*/
 
             while (true)
             { 
