@@ -3,7 +3,7 @@
 namespace MoonlightPGR.Server.PacketUtils.PacketTypes
 {
     [MessagePackObject(false)]
-    public class RequestPacket
+    public class RequestPacket : IPacket
     {
         [Key(0)]
         public int Seq;

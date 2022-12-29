@@ -7,6 +7,8 @@ using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 using MoonlightPGR.Server.PacketUtils.PacketTypes;
+using Newtonsoft.Json.Linq;
+using System.Numerics;
 
 namespace MoonlightPGR.Server
 {
@@ -68,20 +70,39 @@ namespace MoonlightPGR.Server
                 MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
                 //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
-                switch (packet.Type)
+
+                if (packet.Type != BasePacket.PacketContentType.Exception)
                 {
-                    case BasePacket.PacketContentType.RequestPacket:
-                        RequestPacket req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
-                        c.Log($"Recv : {packet.Type}({packet.Seq}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(req.Body))}");
-                        break;
-                    case BasePacket.PacketContentType.PushPacket:
-                        PushPacket push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
-                        c.Log($"Recv : {packet.Type}({packet.Seq}) | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(push.Body))}");
-                        break;
-                    case BasePacket.PacketContentType.Exception:
-                        ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
-                        c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}",false);
-                        break;
+                    switch (packet.Type)
+                    {
+                        case BasePacket.PacketContentType.RequestPacket:
+                            var Req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
+                            var ReqHandler = HandlerFactory.GetHandler(Req.PacketName);
+                            if (ReqHandler == null)
+                            {
+                                c.Warn($"Unhandled packet {Req.PacketName}");
+                                return;
+                            }
+                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
+                            ReqHandler.Invoke(this, Req);
+                            break;
+                        case BasePacket.PacketContentType.PushPacket:
+                            var Push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
+                            var PushHandler = HandlerFactory.GetHandler(Push.PacketName);
+                            if (PushHandler == null)
+                            {
+                                c.Warn($"Unhandled packet {Push.PacketName}");
+                                return;
+                            }
+                            c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
+                            PushHandler.Invoke(this, Push);
+                            break;
+                        case BasePacket.PacketContentType.Exception:
+                            ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
+                            c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}", false);
+                            break;
+                    }
+                    
                 }
             }
             catch (Exception e)

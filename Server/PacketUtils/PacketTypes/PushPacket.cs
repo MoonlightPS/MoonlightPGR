@@ -3,7 +3,7 @@
 namespace MoonlightPGR.Server.PacketUtils.PacketTypes
 {
     [MessagePackObject(false)]
-    public class PushPacket
+    public class PushPacket : IPacket
     {
         [Key(0)]
         public string PacketName;

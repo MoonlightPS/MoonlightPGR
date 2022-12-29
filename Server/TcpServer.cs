@@ -1,6 +1,9 @@
-﻿using MoonlightPGR.Util;
+﻿using MoonlightPGR.Server.PacketUtils;
+using MoonlightPGR.Util;
 using System.Net;
+using System;
 using System.Net.Sockets;
+using MoonlightPGR.Server.PacketUtils.PacketTypes;
 
 namespace MoonlightPGR.Server
 {
@@ -25,6 +28,21 @@ namespace MoonlightPGR.Server
         {
             _server.Start();
             Logger.c.Log($"Running on port {_port}");
+
+            foreach (var type in typeof(HandlerFactory).Assembly.GetTypes())
+            {
+                foreach (var method in type.GetMethods())
+                {
+                    var attributes = method.GetCustomAttributes(typeof(PacketHandlerAttribute), false);
+                    if (attributes.Length > 0)
+                    {
+                        var attribute = (PacketHandlerAttribute)attributes[0];
+                        Console.WriteLine($"{attribute}");
+                        var handler = (Action<Session, IPacket>)Delegate.CreateDelegate(typeof(Action<Session, IPacket>), method);
+                        HandlerFactory.RegisterHandler((string)attribute.PacketName, handler);
+                    }
+                }
+            }
 
             while (true)
             { 
