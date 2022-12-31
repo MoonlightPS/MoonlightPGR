@@ -14,6 +14,6 @@ public static class MoonlightPGR
     {
         Logger.c.Log("Starting MoonlightPGR...");
 
-        var server = new TcpServer("127.0.0.1", 7000);
+        var server = new TcpServer("127.0.0.1", 2333);
     }
 }
