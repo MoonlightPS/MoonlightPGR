@@ -1,4 +1,5 @@
 ﻿using MoonlightPGR.Server.PacketUtils;
+using MoonlightPGR.Server.PacketUtils.PacketTypes;
 using MoonlightPGR.Util;
 using System.Net;
 using System.Net.Sockets;
@@ -34,7 +35,7 @@ namespace MoonlightPGR.Server
                     if (attributes.Length > 0)
                     {
                         var attribute = (PacketHandlerAttribute)attributes[0];
-                        var handler = (Action<Session, IPacket>)Delegate.CreateDelegate(typeof(Action<Session, IPacket>), method);
+                        var handler = (Action<Session, RequestPacket>)Delegate.CreateDelegate(typeof(Action<Session, RequestPacket>), method);
                         HandlerFactory.RegisterHandler(attribute.PacketName, handler);
                     }
                 }

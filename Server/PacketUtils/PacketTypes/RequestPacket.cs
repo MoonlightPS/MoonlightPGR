@@ -6,7 +6,7 @@ namespace MoonlightPGR.Server.PacketUtils.PacketTypes
     public class RequestPacket : IPacket
     {
         [Key(0)]
-        public int Seq;
+        public uint Seq;
 
         [Key(1)]
         public string PacketName;

@@ -20,9 +20,9 @@ namespace MoonlightPGR.Dispatch
             app.UsePathBase("/");
             app.Urls.Add("http://*:80");
             //app.Urls.Add("https://*:443");
-            app.Run();
 
-            Logger.c.Log("Started dispatch on http://localhost/");
+            Logger.c.Log("Starting dispatch on http://localhost/");
+            app.Run();
         }
     }
 }

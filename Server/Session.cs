@@ -2,13 +2,8 @@
 using MoonlightPGR.Server.PacketUtils;
 using MoonlightPGR.Util;
 using MessagePack;
-using System;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
-using System.Xml.Linq;
 using MoonlightPGR.Server.PacketUtils.PacketTypes;
-using Newtonsoft.Json.Linq;
-using System.Numerics;
 
 namespace MoonlightPGR.Server
 {
@@ -26,7 +21,6 @@ namespace MoonlightPGR.Server
             _client = client;
             _id = id;
             c = new Logger(id, ConsoleColor.Yellow);
-            //Task.Run(() => ClientLoop(client));
             Thread task = new Thread(() => ClientLoop(client));
             task.Priority = ThreadPriority.Highest;
             task.Start();
@@ -85,14 +79,7 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Req.PacketName}");
                                 //return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body, lz4Options))}");
-
-                            if (!isSeqSet)
-                            {
-                                this.seq = packet.Seq;
-                                this.isSeqSet = true;
-                            }
-
+                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body, lz4Options))}");
                             ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
@@ -103,7 +90,7 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Push.PacketName}");
                                 //return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
+                            c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
                             //PushHandler.Invoke(this, Push);
                             break;
                         case BasePacket.PacketContentType.Exception:
@@ -128,14 +115,14 @@ namespace MoonlightPGR.Server
                              .ToArray();
         }
 
-        public bool Send(string PacketName, object data)
+        public bool Send(string PacketName, object data, uint seq)
         {
             MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
 
             ResponsePacket rsp = new ResponsePacket()
             {
-                Seq = ++seq,
-                Body = MessagePackSerializer.Serialize(data),
+                Seq = seq,
+                Body = MessagePackSerializer.Serialize(data, lz4Options),
                 PacketName = PacketName,
             };
 
@@ -143,20 +130,33 @@ namespace MoonlightPGR.Server
             {
                 Type = BasePacket.PacketContentType.ResponsePacket,
                 Data = MessagePackSerializer.Serialize(rsp),
-                Seq = rsp.Seq
+                Seq = 0
             };
-            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(rsp.Body))}");
-            return Send(PacketName, MessagePackSerializer.Serialize<BasePacket>(packet, lz4Options));
+            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(data)}");
+            return Send(MessagePackSerializer.Serialize(packet, lz4Options));
         }
 
-        public bool Send(string packetName, byte[] data)
+        public bool Send(byte[] data)
         {
-            byte[] msg = new byte[data.Length];
-            Array.Copy(data, msg, data.Length);
+            byte[] msg = new byte[4 + data.Length];
+            BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
+
+            bw.Write(new byte[] { 0x3A, 0, 0, 0 }); // Idk what this is
+            PGRCrypto.Encrypt(data);
+            bw.Write(data);
+            
+            bw.Flush();
+            bw.Close();
+
+            return SendRaw(msg);
+        }
+
+        public bool SendRaw(byte[] msg)
+        {
             try
             {
                 _client.GetStream().Write(msg, 0, msg.Length);
-                //c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
+                //c.Debug($"SENT {BitConverter.ToString(msg).Replace("-", "")}");
                 return true;
             }
             catch (Exception e)
@@ -164,6 +164,6 @@ namespace MoonlightPGR.Server
                 c.Error(e.Message);
                 return false;
             }
-        }
+        } 
     }
 }
