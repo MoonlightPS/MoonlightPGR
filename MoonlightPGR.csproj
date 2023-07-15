@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="2.4.59" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 

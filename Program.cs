@@ -13,7 +13,7 @@ public static class MoonlightPGR
     public static void Main()
     {
         Logger.c.Log("Starting MoonlightPGR...");
-
-        var server = new TcpServer("127.0.0.1", 2333);
+        new TcpServer("127.0.0.1", 2333);
+        Dispatch.DispatchServer.Start();
     }
 }
