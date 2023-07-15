@@ -18,6 +18,8 @@ namespace MoonlightPGR.Server
         private readonly TcpClient _client;
         public readonly string _id;
         public int uid = 0;
+        public bool isSeqSet = false;
+        public uint seq = 0;
 
         public Session(TcpClient client, string id)
         {
@@ -83,8 +85,15 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Req.PacketName}");
                                 //return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
-                            //ReqHandler.Invoke(this, Req);
+                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body, lz4Options))}");
+
+                            if (!isSeqSet)
+                            {
+                                this.seq = packet.Seq;
+                                this.isSeqSet = true;
+                            }
+
+                            ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
                             var Push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
@@ -119,16 +128,35 @@ namespace MoonlightPGR.Server
                              .ToArray();
         }
 
+        public bool Send(string PacketName, object data)
+        {
+            MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
+
+            ResponsePacket rsp = new ResponsePacket()
+            {
+                Seq = ++seq,
+                Body = MessagePackSerializer.Serialize(data),
+                PacketName = PacketName,
+            };
+
+            BasePacket packet = new BasePacket()
+            {
+                Type = BasePacket.PacketContentType.ResponsePacket,
+                Data = MessagePackSerializer.Serialize(rsp),
+                Seq = rsp.Seq
+            };
+            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq})] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(rsp.Body))}");
+            return Send(PacketName, MessagePackSerializer.Serialize<BasePacket>(packet, lz4Options));
+        }
+
         public bool Send(string packetName, byte[] data)
         {
-            //Packet packet = new Packet(cmd, body.ToByteArray());
             byte[] msg = new byte[data.Length];
             Array.Copy(data, msg, data.Length);
             try
             {
                 _client.GetStream().Write(msg, 0, msg.Length);
-                c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
-                //c.Log(Enum.GetName(typeof(CmdID), packet._CmdId) ?? packet._CmdId.ToString());
+                //c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
                 return true;
             }
             catch (Exception e)
