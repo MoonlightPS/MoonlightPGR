@@ -13,7 +13,7 @@ namespace MoonlightPGR.Server.Handlers
         {
             LoginRequest body = MessagePackSerializer.Deserialize<LoginRequest>(packet.Body);
 
-            /*LoginResponse rsp = new()
+            LoginResponse rsp = new()
             {
                 Code = 0,
                 UtcOffset = 0,
@@ -21,21 +21,9 @@ namespace MoonlightPGR.Server.Handlers
                 ReconnectToken = "00163efffe00a63d-00261210-00014d9c-0092c1e1275aa708-003a7fb7"
             };
 
-            session.Send("LoginResponse", rsp, packet.Seq, new byte[] { 0x96, 0x0, 0x0, 0x0 });*/
+            session.Send("LoginResponse", rsp, packet.Seq, new byte[] { 0x96, 0x0, 0x0, 0x0 });
 
-           byte[] data = Session.StringToByteArray("C90000009063D200000089F07A930001C4849302AD4C6F67696E526573706F6E7365C47284A4436F646500A95574634F666673657400AD55746353657276657254696D65CE64B2ADAFAE5265636F6E6E656374546F6B656ED93C303031363365666666653030613633642D30303236313231302D30303031346439632D303039326331653132373561613730382D3030336137666237"); // FROM DUMP
-
-           byte[] msg = new byte[4 + data.Length];
-           BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
-
-           bw.Write(new byte[] { 0x96, 0x0, 0x0, 0x0 }); // Idk what this is
-           PGRCrypto.Encrypt(data);
-           bw.Write(data);
-
-           bw.Flush();
-           bw.Close();
-
-           session.SendRaw(msg);
+            //session.SendRaw(Session.StringToByteArray("96000000ae0ea329884108fbf21682612dedee79c027be947b1f0d5ae59ea6025e297334d05b9f7afff9d0ff765f0a95a17bd50740cdc73b4b51bba4173b84b6a1796f97be47ea2fddb62b4f332395622747d20a0213c8667ddaeb297300033e53e4cd5c66436ad30ae4fc6230740c85419125931a9bc999570fe42145809db7488c9ad4ec2dc938c1593e6d99fc703effae2c089cda0f92146a"));
 
             NotifyDailyLotteryData lotteryData = new()
             {

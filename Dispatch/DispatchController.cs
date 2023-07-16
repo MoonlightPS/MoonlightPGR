@@ -8,6 +8,13 @@ namespace MoonlightPGR.Dispatch;
 
 public class DispatchController
 {
+
+    public class LogUpload
+    {
+        public int code {  get; set; }
+        public string msg { get; set; }
+    }
+
     public static void AddHandlers(WebApplication app)
     {
         var jsonOptions = new JsonSerializerOptions
@@ -72,6 +79,15 @@ PcPayCallbackList	string	http://198.11.174.55:1300/api/XPay/KuroPayResult#http:/
                 Ip = "127.0.0.1"
             };
             return ctx.Response.WriteAsync(JsonConvert.SerializeObject(rsp));
+        });
+
+        app.MapPost("/maidian_pcstarter", (ctx) =>
+        {
+            return ctx.Response.WriteAsJsonAsync(new LogUpload()
+            {
+                code = 0,
+                msg = "ok"
+            });
         });
 
     }

@@ -62,8 +62,8 @@ namespace MoonlightPGR.Server
                 array = array.Substring(8, array.Length - 8);
                 message = StringToByteArray(array);
                 PGRCrypto.Decrypt(message);
-                //c.Log($"Decrypted : {Convert.ToHexString(message)}");
-                MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
+                c.Log($"Decrypted : {Convert.ToHexString(message)}");
+                MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
                 //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
 
@@ -79,7 +79,7 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Req.PacketName}");
                                 //return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body, lz4Options))}");
+                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
                             ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
@@ -117,7 +117,7 @@ namespace MoonlightPGR.Server
 
         public bool Send(string PacketName, object data, uint seq, byte[] head)
         {
-            MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
+            MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
 
             ResponsePacket rsp = new ResponsePacket()
             {
@@ -138,6 +138,7 @@ namespace MoonlightPGR.Server
 
         public bool Send(byte[] data, byte[] head)
         {
+            Logger.c.Debug(Convert.ToHexString(data));
             byte[] msg = new byte[4 + data.Length];
             BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
 
