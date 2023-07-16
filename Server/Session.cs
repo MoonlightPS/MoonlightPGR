@@ -115,14 +115,14 @@ namespace MoonlightPGR.Server
                              .ToArray();
         }
 
-        public bool Send(string PacketName, object data, uint seq)
+        public bool Send(string PacketName, object data, uint seq, byte[] head)
         {
             MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
 
             ResponsePacket rsp = new ResponsePacket()
             {
                 Seq = seq,
-                Body = MessagePackSerializer.Serialize(data, lz4Options),
+                Body = MessagePackSerializer.Serialize(data),
                 PacketName = PacketName,
             };
 
@@ -133,15 +133,15 @@ namespace MoonlightPGR.Server
                 Seq = 0
             };
             c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(data)}");
-            return Send(MessagePackSerializer.Serialize(packet, lz4Options));
+            return Send(MessagePackSerializer.Serialize(packet, lz4Options), head);
         }
 
-        public bool Send(byte[] data)
+        public bool Send(byte[] data, byte[] head)
         {
             byte[] msg = new byte[4 + data.Length];
             BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
 
-            bw.Write(new byte[] { 0x3A, 0, 0, 0 }); // Idk what this is
+            bw.Write(head); // Idk what this is
             PGRCrypto.Encrypt(data);
             bw.Write(data);
             
