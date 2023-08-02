@@ -12,8 +12,7 @@ namespace MoonlightPGR.Server
         public readonly Logger c;
         private readonly TcpClient _client;
         public readonly string _id;
-        public uint ServerSeq = 1;
-        public List<uint> requestIds = new List<uint>();
+        public uint ServerSeq = 0;
 
         private readonly MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
 
@@ -120,7 +119,6 @@ namespace MoonlightPGR.Server
                     Body = MessagePackSerializer.Serialize(data),
                     PacketName = PacketName,
                 };
-                requestIds.Add(clientSeq);
             }
             else
             {
@@ -135,7 +133,7 @@ namespace MoonlightPGR.Server
             {
                 Type = clientSeq != 0 ? BasePacket.PacketContentType.ResponsePacket : BasePacket.PacketContentType.PushPacket,
                 Data = MessagePackSerializer.Serialize(rsp),
-                Seq = clientSeq != 0 ? 0 : TryGetNextServerSeq()
+                Seq = clientSeq != 0 ? 0 : ++ServerSeq
             };
             c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(data)}");
             return Send(MessagePackSerializer.Serialize(packet, lz4Options));
@@ -179,15 +177,6 @@ namespace MoonlightPGR.Server
                              .Where(x => x % 2 == 0)
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
-        }
-
-        public uint TryGetNextServerSeq()
-        {
-            while (requestIds.Contains(++ServerSeq))
-            {
-                ServerSeq++;
-            }
-            return ServerSeq;
         }
     }
 }
