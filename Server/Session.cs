@@ -12,9 +12,10 @@ namespace MoonlightPGR.Server
         public readonly Logger c;
         private readonly TcpClient _client;
         public readonly string _id;
-        public int uid = 0;
-        public bool isSeqSet = false;
-        public uint seq = 0;
+        public uint ServerSeq = 1;
+        public List<uint> requestIds = new List<uint>();
+
+        private readonly MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
 
         public Session(TcpClient client, string id)
         {
@@ -63,7 +64,7 @@ namespace MoonlightPGR.Server
                 message = StringToByteArray(array);
                 PGRCrypto.Decrypt(message);
                 c.Log($"Decrypted : {Convert.ToHexString(message)}");
-                MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
+                
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
                 //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
 
@@ -79,7 +80,7 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Req.PacketName}");
                                 //return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
+                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
                             ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
@@ -107,48 +108,54 @@ namespace MoonlightPGR.Server
             }
         }
 
-        public static byte[] StringToByteArray(string hex)
+        public bool Send(string PacketName, object data, uint clientSeq = 0)
         {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
-        }
+            object rsp;
 
-        public bool Send(string PacketName, object data, uint seq, byte[] head)
-        {
-            MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
-
-            ResponsePacket rsp = new ResponsePacket()
+            if (clientSeq != 0)
             {
-                Seq = seq,
-                Body = MessagePackSerializer.Serialize(data),
-                PacketName = PacketName,
-            };
+                rsp = new ResponsePacket()
+                {
+                    Seq = clientSeq,
+                    Body = MessagePackSerializer.Serialize(data),
+                    PacketName = PacketName,
+                };
+                requestIds.Add(clientSeq);
+            }
+            else
+            {
+                rsp = new PushPacket()
+                {
+                    Body = MessagePackSerializer.Serialize(data),
+                    PacketName = PacketName,
+                };
+            }
 
             BasePacket packet = new BasePacket()
             {
-                Type = BasePacket.PacketContentType.ResponsePacket,
+                Type = clientSeq != 0 ? BasePacket.PacketContentType.ResponsePacket : BasePacket.PacketContentType.PushPacket,
                 Data = MessagePackSerializer.Serialize(rsp),
-                Seq = 0
+                Seq = clientSeq != 0 ? 0 : TryGetNextServerSeq()
             };
             c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(data)}");
-            return Send(MessagePackSerializer.Serialize(packet, lz4Options), head);
+            return Send(MessagePackSerializer.Serialize(packet, lz4Options));
         }
 
-        public bool Send(byte[] data, byte[] head)
+        public bool Send(byte[] data)
         {
-            Logger.c.Debug(Convert.ToHexString(data));
+            Logger.c.Debug($"Sent {Convert.ToHexString(BitConverter.GetBytes(data.Length))}{Convert.ToHexString(data)}");
+
             byte[] msg = new byte[4 + data.Length];
             BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
 
-            bw.Write(head); // Idk what this is
+            bw.Write(BitConverter.GetBytes(data.Length)); // Packet len :skull:
             PGRCrypto.Encrypt(data);
             bw.Write(data);
             
             bw.Flush();
             bw.Close();
 
+            
             return SendRaw(msg);
         }
 
@@ -157,7 +164,6 @@ namespace MoonlightPGR.Server
             try
             {
                 _client.GetStream().Write(msg, 0, msg.Length);
-                //c.Debug($"SENT {BitConverter.ToString(msg).Replace("-", "")}");
                 return true;
             }
             catch (Exception e)
@@ -165,6 +171,23 @@ namespace MoonlightPGR.Server
                 c.Error(e.Message);
                 return false;
             }
-        } 
+        }
+
+        public static byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                             .ToArray();
+        }
+
+        public uint TryGetNextServerSeq()
+        {
+            while (requestIds.Contains(++ServerSeq))
+            {
+                ServerSeq++;
+            }
+            return ServerSeq;
+        }
     }
 }

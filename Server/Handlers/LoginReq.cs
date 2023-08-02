@@ -21,16 +21,15 @@ namespace MoonlightPGR.Server.Handlers
                 ReconnectToken = "00163efffe00a63d-00261210-00014d9c-0092c1e1275aa708-003a7fb7"
             };
 
-            session.Send("LoginResponse", rsp, packet.Seq, new byte[] { 0x96, 0x0, 0x0, 0x0 });
+            session.Send("LoginResponse", rsp, packet.Seq);
 
-            //session.SendRaw(Session.StringToByteArray("96000000ae0ea329884108fbf21682612dedee79c027be947b1f0d5ae59ea6025e297334d05b9f7afff9d0ff765f0a95a17bd50740cdc73b4b51bba4173b84b6a1796f97be47ea2fddb62b4f332395622747d20a0213c8667ddaeb297300033e53e4cd5c66436ad30ae4fc6230740c85419125931a9bc999570fe42145809db7488c9ad4ec2dc938c1593e6d99fc703effae2c089cda0f92146a"));
 
             NotifyDailyLotteryData lotteryData = new()
             {
                 Lotteries = new List<object> { }
             };
 
-            session.Send("NotifyDailyLotteryData", lotteryData, ++packet.Seq, new byte[] { 0x2B, 0x0, 0x0, 0x0 });
+            session.Send("NotifyDailyLotteryData", lotteryData);
 
             NotifyPayInfo payInfo = new()
             {
@@ -38,14 +37,14 @@ namespace MoonlightPGR.Server.Handlers
                 IsGetFirstPayReward = false
             };
 
-            session.Send("NotifyPayInfo", payInfo, packet.Seq, new byte[] { 0x3F, 0x0, 0x0, 0x0 });
+            session.Send("NotifyPayInfo", payInfo);
 
             NotifyEquipChipGroupList equipChipGroup = new()
             {
                 ChipGroupDataList = new List<object> { }
             };
 
-            session.Send("NotifyEquipChipGroupList", equipChipGroup, packet.Seq, new byte[] { 0x35, 0x0, 0x0, 0x0 });
+            session.Send("NotifyEquipChipGroupList", equipChipGroup);
 
             NotifyEquipChipAutoRecycleSite equipChipAutoRecycle = new()
             {
@@ -57,7 +56,7 @@ namespace MoonlightPGR.Server.Handlers
                 }
             };
 
-            session.Send("NotifyEquipChipAutoRecycleSite", equipChipAutoRecycle, packet.Seq, new byte[] { 0x60, 0x0, 0x0, 0x0 });
+            session.Send("NotifyEquipChipAutoRecycleSite", equipChipAutoRecycle);
 
             NotifyArchiveLoginData archiveLoginData = JsonConvert.DeserializeObject<NotifyArchiveLoginData>(@"{
             ""Monsters"": [],
@@ -133,7 +132,7 @@ namespace MoonlightPGR.Server.Handlers
             ""UnlockMails"": []
         }");
 
-            session.Send("NotifyArchiveLoginData", archiveLoginData, packet.Seq, new byte[] { 0xC8, 0x01, 0x0, 0x0 });
+            session.Send("NotifyArchiveLoginData", archiveLoginData);
         }
     }
 }

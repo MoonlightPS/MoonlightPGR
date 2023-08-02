@@ -14,7 +14,7 @@ namespace MoonlightPGR.Server.Handlers
                 UtcServerTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             };
 
-            session.Send("HeartbeatResponse", rsp, packet.Seq, new byte[] { 0x2F, 0x0, 0x0, 0x0 });
+            session.Send("HeartbeatResponse", rsp, packet.Seq);
         }
 
         [PacketHandler("Ping")]
@@ -27,7 +27,7 @@ namespace MoonlightPGR.Server.Handlers
                 UtcTime = body.UtcTime,
             };
 
-            session.Send("Pong", rsp, packet.Seq, new byte[] { 0x20, 0x0, 0x0, 0x0 });
+            session.Send("Pong", rsp, packet.Seq);
         }
     }
 }

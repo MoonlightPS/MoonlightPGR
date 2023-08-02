@@ -18,7 +18,7 @@ namespace MoonlightPGR.Server.Handlers
                 Sha1Table = null
             };
 
-            session.Send("HandshakeResponse", rsp, packet.Seq, new byte[] { 0x3A, 0x0, 0x0, 0x0 });
+            session.Send("HandshakeResponse", rsp, packet.Seq);
 
             /*byte[] data = Session.StringToByteArray("930001C4359301B148616E647368616B65526573706F6E7365C41F83A4436F646500AB5574634F70656E54696D6500A9536861315461626C65C0"); // FROM DUMP
 

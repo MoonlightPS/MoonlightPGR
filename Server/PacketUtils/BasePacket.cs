@@ -7,7 +7,7 @@ namespace MoonlightPGR.Server.PacketUtils
     public class BasePacket
     {
         [Key(0)]
-        public int Seq;
+        public uint Seq;
 
         [Key(1)]
         public PacketContentType Type;
