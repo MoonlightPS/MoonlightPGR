@@ -29,42 +29,35 @@ namespace MoonlightPGR.Server
         private void ClientLoop(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
-            byte[] msg = new byte[1 << 16];
-            while (client.Connected)  //while the `client is connected, we look for incoming messages
+            byte[] buffer = new byte[1 << 16]; // 64KB buffer size
+            while (client.Connected)
             {
-                Array.Clear(msg, 0, msg.Length);
-
-                try
+                if (ns.DataAvailable)
                 {
-                    var len = ns.Read(msg, 0, msg.Length);
-                    if (len > 0)
+                    int bytesRead = ns.Read(buffer, 0, buffer.Length);
+                    if (bytesRead > 0)
                     {
-                        // Get message
-                        //c.Debug(BitConverter.ToString(msg).Replace("-", "").Trim('0'));
-                        onMessage(msg);
+                        byte[] message = new byte[bytesRead];
+                        Buffer.BlockCopy(buffer, 0, message, 0, bytesRead);
+                        onMessage(message);
                     }
                 }
-                catch (Exception e)
-                {
-                    c.Error(e.Message);
-                    //ignored
-                }
-
-
             }
         }
 
+
         private void onMessage(byte[] message)
         {
-            try
+            while (message.Length > 0)
             {
-                string array = Convert.ToHexString(message).Trim('0');
-                array = array.Substring(8, array.Length - 8);
-                message = StringToByteArray(array);
-                PGRCrypto.Decrypt(message);
+                int length = BitConverter.ToInt32(message, 0);
+                byte[] payload = message.Skip(4).Take(length).ToArray();
+                PGRCrypto.Decrypt(payload);
+                message = message.Skip(length + 4).ToArray();
                 c.Log($"Decrypted : {Convert.ToHexString(message)}");
                 
-                BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
+                
+                BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(payload, lz4Options);
                 //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
 
                 if (packet.Type != BasePacket.PacketContentType.Exception)
@@ -98,16 +91,17 @@ namespace MoonlightPGR.Server
                             c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}", false);
                             break;
                     }
-                    
                 }
-            }
-            catch (Exception e)
-            {
-                c.Error(e.ToString());
             }
         }
 
         public bool Send(string PacketName, object data, uint clientSeq = 0)
+        {
+            byte[] serializedData = MessagePackSerializer.Serialize(data);
+            return Send(PacketName, serializedData, clientSeq);
+        }
+
+        public bool Send(string PacketName, byte[] data, uint clientSeq = 0)
         {
             object rsp;
 
@@ -116,7 +110,7 @@ namespace MoonlightPGR.Server
                 rsp = new ResponsePacket()
                 {
                     Seq = clientSeq,
-                    Body = MessagePackSerializer.Serialize(data),
+                    Body = data,
                     PacketName = PacketName,
                 };
             }
@@ -124,7 +118,7 @@ namespace MoonlightPGR.Server
             {
                 rsp = new PushPacket()
                 {
-                    Body = MessagePackSerializer.Serialize(data),
+                    Body = data,
                     PacketName = PacketName,
                 };
             }
