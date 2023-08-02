@@ -143,7 +143,7 @@ namespace MoonlightPGR.Server
 
         public bool Send(byte[] data)
         {
-            Logger.c.Debug($"Sent {Convert.ToHexString(BitConverter.GetBytes(data.Length))}{Convert.ToHexString(data)}");
+            Logger.c.Debug($"Sent [{data.Length}] {Convert.ToHexString(BitConverter.GetBytes(data.Length))}{Convert.ToHexString(data)}");
 
             byte[] msg = new byte[4 + data.Length];
             BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));

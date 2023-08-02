@@ -300,7 +300,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     }
 
     [MessagePackObject(true)]
-    public class CharacterList
+    public class DormCharacterList
     {
         public int CharacterId { get; set; }
         public int DormitoryId { get; set; }
@@ -323,7 +323,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public List<object> DormitoryList { get; set; }
         public List<object> VisitorList { get; set; }
         public List<object> FurnitureList { get; set; }
-        public List<CharacterList> CharacterList { get; set; }
+        public List<DormCharacterList> CharacterList { get; set; }
         public List<object> Layouts { get; set; }
         public List<object> BindRelations { get; set; }
     }
@@ -528,6 +528,284 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     public class NotifyActivityDrawGroupCount
     {
         public int Count { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class NotifyLogin
+    {
+        public PlayerData PlayerData { get; set; }
+        public TimeLimitCtrlConfigList[] TimeLimitCtrlConfigList { get; set; }
+        public SharePlatformConfigList[] SharePlatformConfigList { get; set; }
+        public ItemList[] ItemList { get; set; }
+        public ItemRecycleDict ItemRecycleDict { get; set; }
+        public LoginCharacterList[] CharacterList { get; set; }
+        public EquipList[] EquipList { get; set; }
+        public FashionList[] FashionList { get; set; }
+        public HeadPortraitList[] HeadPortraitList { get; set; }
+        public BaseEquipLoginData BaseEquipLoginData { get; set; }
+        public FubenData FubenData { get; set; }
+        public FubenMainLineData FubenMainLineData { get; set; }
+        public FubenLoginData FubenChapterExtraLoginData { get; set; }
+        public FubenUrgentEventData FubenUrgentEventData { get; set; }
+        public object[] AutoFightRecords { get; set; }
+        public Dictionary<string, TeamGroupDatum> TeamGroupData { get; set; }
+        public ItemRecycleDict TeamPrefabData { get; set; }
+        public SignInfo[] SignInfos { get; set; }
+        public object[] AssignChapterRecord { get; set; }
+        public object[] WeaponFashionList { get; set; }
+        public object[] PartnerList { get; set; }
+        public object[] ShieldedProtocolList { get; set; }
+        public object LimitedLoginData { get; set; }
+        public long UseBackgroundId { get; set; }
+        public FubenLoginData FubenShortStoryLoginData { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class BaseEquipLoginData
+    {
+        public object[] BaseEquipList { get; set; }
+        public object[] DressedList { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class LoginCharacterList
+    {
+        public long Id { get; set; }
+        public long Level { get; set; }
+        public long Exp { get; set; }
+        public long Quality { get; set; }
+        public long InitQuality { get; set; }
+        public long Star { get; set; }
+        public long Grade { get; set; }
+        public SkillList[] SkillList { get; set; }
+        public object[] EnhanceSkillList { get; set; }
+        public long FashionId { get; set; }
+        public long CreateTime { get; set; }
+        public long TrustLv { get; set; }
+        public long TrustExp { get; set; }
+        public long Ability { get; set; }
+        public long LiberateLv { get; set; }
+        public CharacterHeadInfo CharacterHeadInfo { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class CharacterHeadInfo
+    {
+        public long HeadFashionId { get; set; }
+        public long HeadFashionType { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class SkillList
+    {
+        public long Id { get; set; }
+        public long Level { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class EquipList
+    {
+        public long Id { get; set; }
+        public long TemplateId { get; set; }
+        public long CharacterId { get; set; }
+        public long Level { get; set; }
+        public long Exp { get; set; }
+        public long Breakthrough { get; set; }
+        public ResonanceInfo[] ResonanceInfo { get; set; }
+        public object[] UnconfirmedResonanceInfo { get; set; }
+        public object[] AwakeSlotList { get; set; }
+        public bool IsLock { get; set; }
+        public long CreateTime { get; set; }
+        public bool IsRecycle { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class ResonanceInfo
+    {
+        public long Slot { get; set; }
+        public long Type { get; set; }
+        public long CharacterId { get; set; }
+        public long TemplateId { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FashionList
+    {
+        public long Id { get; set; }
+        public bool IsLock { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FubenLoginData
+    {
+        public object[] TreasureData { get; set; }
+        public object[] LastPassStage { get; set; }
+        public object[] ChapterEventInfos { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FubenData
+    {
+        public Dictionary<string, StageDatum> StageData { get; set; }
+        public FubenBaseData FubenBaseData { get; set; }
+        public object[] UnlockHideStages { get; set; }
+        public object[] StageDifficulties { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FubenBaseData
+    {
+        public long RefreshTime { get; set; }
+        public long SelectedCharId { get; set; }
+        public long UrgentAlarmCount { get; set; }
+        public long WeeklyUrgentCount { get; set; }
+        public ItemRecycleDict DayUrgentCount { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class ItemRecycleDict
+    {
+    }
+
+    [MessagePackObject(true)]
+    public partial class StageDatum
+    {
+        public long StageId { get; set; }
+        public long StarsMark { get; set; }
+        public bool Passed { get; set; }
+        public long PassTimesToday { get; set; }
+        public long PassTimesTotal { get; set; }
+        public long BuyCount { get; set; }
+        public long Score { get; set; }
+        public long LastPassTime { get; set; }
+        public long RefreshTime { get; set; }
+        public long CreateTime { get; set; }
+        public long BestRecordTime { get; set; }
+        public long LastRecordTime { get; set; }
+        public long[] BestCardIds { get; set; }
+        public long[] LastCardIds { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FubenMainLineData
+    {
+        public long[] TreasureData { get; set; }
+        public Dictionary<string, long> LastPassStage { get; set; }
+        public object[] MainChapterEventInfos { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class FubenUrgentEventData
+    {
+        public ItemRecycleDict UrgentEventData { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class HeadPortraitList
+    {
+        public long Id { get; set; }
+        public long LeftCount { get; set; }
+        public long BeginTime { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class ItemList
+    {
+        public long Id { get; set; }
+        public long Count { get; set; }
+        public long BuyTimes { get; set; }
+        public long TotalBuyTimes { get; set; }
+        public long LastBuyTime { get; set; }
+        public long RefreshTime { get; set; }
+        public long CreateTime { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class PlayerData
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+        public long Level { get; set; }
+        public string Sign { get; set; }
+        public long DisplayCharId { get; set; }
+        public Birthday Birthday { get; set; }
+        public long HonorLevel { get; set; }
+        public string ServerId { get; set; }
+        public long Likes { get; set; }
+        public long CurrTeamId { get; set; }
+        public long ChallengeEventId { get; set; }
+        public long CurrHeadPortraitId { get; set; }
+        public long CurrHeadFrameId { get; set; }
+        public long CurrMedalId { get; set; }
+        public long AppearanceShowType { get; set; }
+        public long DailyReceiveGiftCount { get; set; }
+        public long DailyActivenessRewardStatus { get; set; }
+        public long WeeklyActivenessRewardStatus { get; set; }
+        public long[] Marks { get; set; }
+        public long[] GuideData { get; set; }
+        public long[] Communications { get; set; }
+        public long[] ShowCharacters { get; set; }
+        public object[] ShieldFuncList { get; set; }
+        public AppearanceSettingInfo AppearanceSettingInfo { get; set; }
+        public long CreateTime { get; set; }
+        public long LastLoginTime { get; set; }
+        public long ReportTime { get; set; }
+        public long ChangeNameTime { get; set; }
+        public long Flags { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class AppearanceSettingInfo
+    {
+        public long TitleType { get; set; }
+        public long CharacterType { get; set; }
+        public long FashionType { get; set; }
+        public long WeaponFashionType { get; set; }
+        public long DormitoryType { get; set; }
+        public long DormitoryId { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class Birthday
+    {
+        public long Mon { get; set; }
+        public long Day { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class SharePlatformConfigList
+    {
+        public long Id { get; set; }
+        public long[] SdkId { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class SignInfo
+    {
+        public long Id { get; set; }
+        public long Round { get; set; }
+        public long Day { get; set; }
+        public bool Got { get; set; }
+        public long FinishDay { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class TeamGroupDatum
+    {
+        public long TeamType { get; set; }
+        public long TeamId { get; set; }
+        public long CaptainPos { get; set; }
+        public long FirstFightPos { get; set; }
+        public Dictionary<string, long> TeamData { get; set; }
+        public object TeamName { get; set; }
+    }
+
+    [MessagePackObject(true)]
+    public partial class TimeLimitCtrlConfigList
+    {
+        public long Id { get; set; }
+        public long StartTime { get; set; }
+        public long EndTime { get; set; }
     }
 
 }
