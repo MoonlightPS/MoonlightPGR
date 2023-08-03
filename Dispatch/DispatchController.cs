@@ -34,7 +34,7 @@ public class DispatchController
             string rsp =
 @"Key	Type	Value
 ApplicationVersion	string	1.28.0
-DocumentVersion	string	1.28.9
+DocumentVersion	string	1.28.11
 Debug	bool	1
 External	bool	1
 Channel	int	1
@@ -53,7 +53,7 @@ AndroidPayCallbackUrl	string	http://161.117.238.242:1300/api/XPay/HeroHgAndroidP
 IosPayCallbackUrl	string	http://161.117.238.242:1300/api/XPay/HeroHgIosPayResult
 DEEnable	bool	1
 DEFilter	string	empty
-IndexSha1	string	3e519b4594674424ade2e9155613ff6626254edd
+IndexSha1	string	fbd2891dc3b542c00413c99a137424f88672a47a
 WatermarkEnabled	bool	0
 PicComposition	string	empty
 IosPayCallbackList	string	http://198.11.174.55:1300/api/XPay/HeroHgIosPayResult#http://47.254.134.173:1300/api/XPay/HeroHgIosPayResult#http://8.219.230.8:1300/api/XPay/HeroHgIosPayResult
