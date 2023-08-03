@@ -54,8 +54,7 @@ namespace MoonlightPGR.Server
                 byte[] payload = message.Skip(4).Take(length).ToArray();
                 PGRCrypto.Decrypt(payload);
                 message = message.Skip(length + 4).ToArray();
-                c.Log($"Decrypted : {Convert.ToHexString(message)}");
-                
+                //c.Log($"Decrypted : {Convert.ToHexString(message)}");
                 
                 BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(payload, lz4Options);
                 //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
@@ -70,7 +69,7 @@ namespace MoonlightPGR.Server
                             if (ReqHandler == null)
                             {
                                 c.Warn($"Unhandled packet {Req.PacketName}");
-                                //return;
+                                return;
                             }
                             c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
                             ReqHandler.Invoke(this, Req);
@@ -129,13 +128,13 @@ namespace MoonlightPGR.Server
                 Data = MessagePackSerializer.Serialize(rsp),
                 Seq = clientSeq != 0 ? 0 : ++ServerSeq
             };
-            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(data)}");
+            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(data))}");
             return Send(MessagePackSerializer.Serialize(packet, lz4Options));
         }
 
         public bool Send(byte[] data)
         {
-            Logger.c.Debug($"Sent [{data.Length}] {Convert.ToHexString(BitConverter.GetBytes(data.Length))}{Convert.ToHexString(data)}");
+            //Logger.c.Debug($"Sent [{data.Length}] {Convert.ToHexString(BitConverter.GetBytes(data.Length))}{Convert.ToHexString(data)}");
 
             byte[] msg = new byte[4 + data.Length];
             BinaryWriter bw = new BinaryWriter(new MemoryStream(msg));
