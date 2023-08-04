@@ -41,5 +41,11 @@ namespace MoonlightPGR.Server.Handlers
         {
             session.Send("SetReviewSlapFaceStateResponse", MessagePackSerializer.ConvertFromJson("{\"Code\": 0}"), packet.Seq);
         }
+
+        [PacketHandler("ChangePlayerMarkRequest")]
+        public static void HandleChangePlayerMarkRequest(Session session, RequestPacket packet) // This shit isn't even handle by client lmao
+        {
+            session.Send("ChangePlayerMarkResponse", MessagePackSerializer.ConvertFromJson("{\"Code\": 0}"), packet.Seq);
+        }
     }
 }
