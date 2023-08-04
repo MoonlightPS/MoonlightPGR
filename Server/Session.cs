@@ -15,6 +15,13 @@ namespace MoonlightPGR.Server
         public uint ServerSeq = 0;
 
         private readonly MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
+        private readonly List<string> blacklistedPackets = new() 
+        {
+            "HeartbeatRequest",
+            "HeartbeatResponse",
+            "Ping",
+            "Pong"
+        };
 
         public Session(TcpClient client, string id)
         {
@@ -71,7 +78,11 @@ namespace MoonlightPGR.Server
                                 c.Warn($"Unhandled packet {Req.PacketName}");
                                 return;
                             }
-                            c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
+                            if (!blacklistedPackets.Contains(Req.PacketName))
+                            {
+                                //c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
+                                c.Log($"Recv : {Req.PacketName}");
+                            }
                             ReqHandler.Invoke(this, Req);
                             break;
                         case BasePacket.PacketContentType.PushPacket:
@@ -128,7 +139,11 @@ namespace MoonlightPGR.Server
                 Data = MessagePackSerializer.Serialize(rsp),
                 Seq = clientSeq != 0 ? 0 : ++ServerSeq
             };
-            c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(data))}");
+            if (!blacklistedPackets.Contains(PacketName))
+            {
+                //c.Log($"Sent : {packet.Type}[ {PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(data))}");
+                c.Log($"Sent : {PacketName}");
+            }
             return Send(MessagePackSerializer.Serialize(packet, lz4Options));
         }
 
