@@ -537,7 +537,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public TimeLimitCtrlConfigList[] TimeLimitCtrlConfigList { get; set; }
         public SharePlatformConfigList[] SharePlatformConfigList { get; set; }
         public ItemList[] ItemList { get; set; }
-        public ItemRecycleDict ItemRecycleDict { get; set; }
+        public Dictionary<string, ItemRecycleData> ItemRecycleDict { get; set; }
         public LoginCharacterList[] CharacterList { get; set; }
         public EquipList[] EquipList { get; set; }
         public FashionList[] FashionList { get; set; }
@@ -549,7 +549,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public FubenUrgentEventData FubenUrgentEventData { get; set; }
         public object[] AutoFightRecords { get; set; }
         public Dictionary<string, TeamGroupDatum> TeamGroupData { get; set; }
-        public ItemRecycleDict TeamPrefabData { get; set; }
+        public object TeamPrefabData { get; set; }
         public SignInfo[] SignInfos { get; set; }
         public object[] AssignChapterRecord { get; set; }
         public object[] WeaponFashionList { get; set; }
@@ -659,12 +659,15 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public long SelectedCharId { get; set; }
         public long UrgentAlarmCount { get; set; }
         public long WeeklyUrgentCount { get; set; }
-        public ItemRecycleDict DayUrgentCount { get; set; }
+        public object DayUrgentCount { get; set; }
     }
 
     [MessagePackObject(true)]
-    public partial class ItemRecycleDict
+    public partial class ItemRecycleData
     {
+        public int Id { get; set; }
+        public long RecycleTime { get; set; }
+        public int RecycleCount { get; set; }
     }
 
     [MessagePackObject(true)]
@@ -697,7 +700,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     [MessagePackObject(true)]
     public partial class FubenUrgentEventData
     {
-        public ItemRecycleDict UrgentEventData { get; set; }
+        public object UrgentEventData { get; set; }
     }
 
     [MessagePackObject(true)]
