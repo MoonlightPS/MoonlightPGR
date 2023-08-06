@@ -47,5 +47,11 @@ namespace MoonlightPGR.Server.Handlers
         {
             session.Send("ChangePlayerMarkResponse", MessagePackSerializer.ConvertFromJson("{\"Code\": 0}"), packet.Seq);
         }
+
+        [PacketHandler("ChangeCommunicationRequest")]
+        public static void HandleChangeCommunicationRequest(Session session, RequestPacket packet)
+        {
+            session.Send("ChangeCommunicationResponse", MessagePackSerializer.ConvertFromJson("{\"Code\": 0}"), packet.Seq);
+        }
     }
 }
