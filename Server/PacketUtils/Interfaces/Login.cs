@@ -390,7 +390,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     [MessagePackObject(true)]
     public class PurchaseConfigData
     {
-        public Dictionary<string, PurchaseConfigItem> AddOrModifyConfigs { get; set; }
+        public Dictionary<int, PurchaseConfigItem> AddOrModifyConfigs { get; set; }
         public object RemoveIds { get; set; }
     }
 
@@ -537,7 +537,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public TimeLimitCtrlConfigList[] TimeLimitCtrlConfigList { get; set; }
         public SharePlatformConfigList[] SharePlatformConfigList { get; set; }
         public ItemList[] ItemList { get; set; }
-        public Dictionary<string, ItemRecycleData> ItemRecycleDict { get; set; }
+        public Dictionary<int, ItemRecycleData[]> ItemRecycleDict { get; set; }
         public LoginCharacterList[] CharacterList { get; set; }
         public EquipList[] EquipList { get; set; }
         public FashionList[] FashionList { get; set; }
@@ -548,7 +548,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public FubenLoginData FubenChapterExtraLoginData { get; set; }
         public FubenUrgentEventData FubenUrgentEventData { get; set; }
         public object[] AutoFightRecords { get; set; }
-        public Dictionary<string, TeamGroupDatum> TeamGroupData { get; set; }
+        public Dictionary<int, TeamGroupDatum> TeamGroupData { get; set; }
         public object TeamPrefabData { get; set; }
         public SignInfo[] SignInfos { get; set; }
         public object[] AssignChapterRecord { get; set; }
@@ -646,7 +646,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     [MessagePackObject(true)]
     public partial class FubenData
     {
-        public Dictionary<string, StageDatum> StageData { get; set; }
+        public Dictionary<int, StageDatum> StageData { get; set; }
         public FubenBaseData FubenBaseData { get; set; }
         public object[] UnlockHideStages { get; set; }
         public object[] StageDifficulties { get; set; }
@@ -693,7 +693,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
     public partial class FubenMainLineData
     {
         public long[] TreasureData { get; set; }
-        public Dictionary<string, long> LastPassStage { get; set; }
+        public Dictionary<int, long> LastPassStage { get; set; }
         public object[] MainChapterEventInfos { get; set; }
     }
 
@@ -799,7 +799,7 @@ namespace MoonlightPGR.Server.PacketUtils.Interfaces
         public long TeamId { get; set; }
         public long CaptainPos { get; set; }
         public long FirstFightPos { get; set; }
-        public Dictionary<string, long> TeamData { get; set; }
+        public Dictionary<int, long> TeamData { get; set; }
         public object TeamName { get; set; }
     }
 
