@@ -36,71 +36,93 @@ namespace MoonlightPGR.Server
         private void ClientLoop(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
-            byte[] buffer = new byte[1 << 16]; // 64KB buffer size
+            byte[] lengthBuffer = new byte[4];
+            byte[] buffer = new byte[1 << 16];
+            int bytesRead = 0;
+            int totalLength = 0;
+            List<byte> messageBuffer = new List<byte>();
+
             while (client.Connected)
             {
-                if (ns.DataAvailable)
+                if (bytesRead < 4)
                 {
-                    int bytesRead = ns.Read(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
+                    int remainingLengthBytes = 4 - bytesRead;
+                    int lengthBytesRead = ns.Read(lengthBuffer, bytesRead, remainingLengthBytes);
+                    if (lengthBytesRead > 0)
                     {
-                        byte[] message = new byte[bytesRead];
-                        Buffer.BlockCopy(buffer, 0, message, 0, bytesRead);
-                        onMessage(message);
+                        bytesRead += lengthBytesRead;
+                        if (bytesRead == 4)
+                        {
+                            totalLength = BitConverter.ToInt32(lengthBuffer, 0);
+                            messageBuffer = new List<byte>(totalLength);
+                        }
+                    }
+                }
+
+                if (bytesRead >= 4 && ns.DataAvailable)
+                {
+                    int messageBytesRead = ns.Read(buffer, 0, Math.Min(totalLength, buffer.Length));
+                    if (messageBytesRead > 0)
+                    {
+                        bytesRead += messageBytesRead;
+                        messageBuffer.AddRange(buffer.Take(messageBytesRead));
+
+                        if (bytesRead - 4 == totalLength)
+                        {
+                            onMessage(messageBuffer.ToArray());
+                            bytesRead = 0;
+                            totalLength = 0;
+                            messageBuffer.Clear();
+                        }
                     }
                 }
             }
         }
 
 
+
+
+
         private void onMessage(byte[] message)
         {
-            while (message.Length > 0)
-            {
-                int length = BitConverter.ToInt32(message, 0);
-                byte[] payload = message.Skip(4).Take(length).ToArray();
-                PGRCrypto.Decrypt(payload);
-                message = message.Skip(length + 4).ToArray();
-                //c.Log($"Decrypted : {Convert.ToHexString(message)}");
-                
-                BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(payload, lz4Options);
-                //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
+            PGRCrypto.Decrypt(message);
+            BasePacket packet = MessagePackSerializer.Deserialize<BasePacket>(message, lz4Options);
+            //c.Log($"Base Packet Received : {JsonConvert.SerializeObject(packet)}");
 
-                if (packet.Type != BasePacket.PacketContentType.Exception)
+            if (packet.Type != BasePacket.PacketContentType.Exception)
+            {
+                switch (packet.Type)
                 {
-                    switch (packet.Type)
-                    {
-                        case BasePacket.PacketContentType.RequestPacket:
-                            var Req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
-                            var ReqHandler = HandlerFactory.GetHandler(Req.PacketName);
-                            if (ReqHandler == null)
-                            {
-                                c.Warn($"Unhandled packet {Req.PacketName}");
-                                return;
-                            }
-                            if (!blacklistedPackets.Contains(Req.PacketName))
-                            {
-                                //c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
-                                c.Log($"Recv : {Req.PacketName}");
-                            }
-                            ReqHandler.Invoke(this, Req);
-                            break;
-                        case BasePacket.PacketContentType.PushPacket:
-                            var Push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
-                            var PushHandler = HandlerFactory.GetHandler(Push.PacketName);
-                            if (PushHandler == null)
-                            {
-                                c.Warn($"Unhandled packet {Push.PacketName}");
-                                //return;
-                            }
-                            c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
-                            //PushHandler.Invoke(this, Push);
-                            break;
-                        case BasePacket.PacketContentType.Exception:
-                            ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
-                            c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}", false);
-                            break;
-                    }
+                    case BasePacket.PacketContentType.RequestPacket:
+                        var Req = MessagePackSerializer.Deserialize<RequestPacket>(packet.Data);
+                        var ReqHandler = HandlerFactory.GetHandler(Req.PacketName);
+                        if (ReqHandler == null)
+                        {
+                            c.Warn($"Unhandled packet {Req.PacketName}");
+                            return;
+                        }
+                        if (!blacklistedPackets.Contains(Req.PacketName))
+                        {
+                            //c.Log($"Recv : {packet.Type}[ {Req.PacketName} ({packet.Seq} | {Req.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Req.Body))}");
+                            c.Log($"Recv : {Req.PacketName}");
+                        }
+                        ReqHandler.Invoke(this, Req);
+                        break;
+                    case BasePacket.PacketContentType.PushPacket:
+                        var Push = MessagePackSerializer.Deserialize<PushPacket>(packet.Data);
+                        var PushHandler = HandlerFactory.GetHandler(Push.PacketName);
+                        if (PushHandler == null)
+                        {
+                            c.Warn($"Unhandled packet {Push.PacketName}");
+                            //return;
+                        }
+                        c.Log($"Recv : {packet.Type}[ {Push.PacketName} ({packet.Seq}) ] | {JsonConvert.SerializeObject(MessagePackSerializer.Deserialize<object>(Push.Body))}");
+                        //PushHandler.Invoke(this, Push);
+                        break;
+                    case BasePacket.PacketContentType.Exception:
+                        ExceptionPacket ex = MessagePackSerializer.Deserialize<ExceptionPacket>(packet.Data);
+                        c.Error($"Error Recv : {packet.Type}({packet.Seq}) | ({ex.ErrorCode}) {ex.ErrorMessage}", false);
+                        break;
                 }
             }
         }
