@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using MoonlightPGR.Dispatch.Interfaces;
 using Newtonsoft.Json;
-using System.Text.Json;
 
 namespace MoonlightPGR.Dispatch;
 
@@ -17,16 +16,6 @@ public class DispatchController
 
     public static void AddHandlers(WebApplication app)
     {
-        var jsonOptions = new JsonSerializerOptions
-        {
-
-        };
-        List<string> resourceUrlList = new()
-        {
-            "d2wztyirwsuyyo.cloudfront.net/tmp/com.miHoYo.bh3global",
-            "bigfile-aliyun-usa.honkaiimpact3.com/tmp/com.miHoYo.bh3global",
-        };
-
         // Actual Dispatch
         app.MapGet("/prod/client/config/com.kurogame.punishing.grayraven.en.pc/1.28.0/standalone/config.tab", (ctx) =>
         {
